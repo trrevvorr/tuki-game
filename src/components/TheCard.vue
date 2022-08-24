@@ -69,15 +69,11 @@ export default {
   grid-auto-flow: column;
 }
 .card-wrapper {
-  /* background-color: #ffffff;
-  opacity: 1;
-  background-image: radial-gradient(#131313 0.5px, #ffffff 0.5px);
-  background-size: 10px 10px; */
-
   background-color: #e7f3d5;
   opacity: 1;
-  background-image: radial-gradient(#7a9852 0.5px, #F1F8E7 0.5px);
+  background-image: radial-gradient(#7a9852 0.5px, #f1f8e7 0.5px);
   background-size: 10px 10px;
+  background-repeat: repeat;
 
   padding: 1rem;
   border-radius: 1rem;

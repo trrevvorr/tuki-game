@@ -1,7 +1,9 @@
 <template>
   <main>
-    <TheCard :pieces="card.pieces" :snow="true" />
+    <TheCard :pieces="card.pieces" :snow="snow" />
   </main>
+
+  <v-checkbox v-model="snow" label="Snow" hide-details></v-checkbox>
 </template>
 
 <script>
@@ -16,6 +18,7 @@ export default {
   data() {
     return {
       cardIndex: 0,
+      snow: false,
       cards: cards,
     };
   },
