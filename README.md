@@ -1,6 +1,6 @@
 # tuki-game
 
-This template should help get you started developing with Vue 3 in Vite.
+Simple web app to play Tuki without the need for cards. Site accessible at https://trrevvorr.github.io/tuki-game/.
 
 ## Recommended IDE Setup
 
@@ -49,3 +49,4 @@ npm run lint
 
 1. `chmod +x deploy.sh` (first time only)
 1. `npm run deploy`
+
