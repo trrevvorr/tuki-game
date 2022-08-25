@@ -3,52 +3,24 @@
     <div class="card">
       <TheCard
         :pieces="card.pieces"
-        :snow="cardSettings[cardIndex].snow"
-        :rotate="cardSettings[cardIndex].rotate"
+        :settings="cardSettings[cardIndex]"
+        :modifiers="card.modifiers"
+        @change="(newSettings) => (cardSettings[cardIndex] = Object.assign({}, newSettings))"
       />
     </div>
 
-    <div class="spacer"></div>
-
     <div class="controls">
-      <v-sheet class="card-modifiers" color="white" elevation="1" rounded="true">
-        <v-checkbox
-          v-model="cardSettings[cardIndex].snow"
-          label="Snow"
-          hide-details
-          :disabled="!card.modifiers.includes(modifiers.SNOW)"
-        ></v-checkbox>
-        <span class="spacer"></span>
-        <v-btn
-          icon
-          @click="cardSettings[cardIndex].rotate--"
-          :disabled="
-            !card.modifiers.includes(modifiers.ROTATE_LEFT) || cardSettings[cardIndex].rotate === -1
-          "
-        >
-          <v-icon> mdi-rotate-left </v-icon>
-        </v-btn>
-        <v-btn
-          icon
-          @click="cardSettings[cardIndex].rotate++"
-          :disabled="
-            !card.modifiers.includes(modifiers.ROTATE_RIGHT) || cardSettings[cardIndex].rotate === 1
-          "
-        >
-          <v-icon> mdi-rotate-right </v-icon>
-        </v-btn>
-      </v-sheet>
-      <div class="card-navigation">
-        <v-btn @click="prevCard" :disabled="cardIndex === 0">
-          <v-icon left> mdi-arrow-left </v-icon>
-          Previous
-        </v-btn>
-        <span class="spacer"></span>
-        <v-btn @click="nextCard" :disabled="cardIndex === cards.length - 1">
-          Next
-          <v-icon right> mdi-arrow-right </v-icon>
-        </v-btn>
-      </div>
+      <v-btn @click="prevCard" :disabled="cardIndex === 0">
+        <v-icon left> mdi-arrow-left </v-icon>
+        Previous
+      </v-btn>
+
+      <span class="spacer"></span>
+
+      <v-btn @click="nextCard" :disabled="cardIndex === cards.length - 1">
+        Next
+        <v-icon right> mdi-arrow-right </v-icon>
+      </v-btn>
     </div>
   </div>
 </template>
@@ -109,31 +81,17 @@ export default {
 
 <style scoped>
 .game {
-  height: 100%;
-  display: grid;
-  grid-template-rows: auto 1fr auto;
-
+  padding: 2rem;
   max-width: 1280px;
   margin: auto;
 }
 
 .controls {
-  display: grid;
-  grid-template-rows: auto auto;
-  row-gap: 1rem;
-}
-
-.card-modifiers {
-  display: grid;
-  grid-template-columns: auto 1fr auto auto;
-  column-gap: 1rem;
-  padding: 0.5rem;
-  align-items: center;
-}
-
-.card-navigation {
-  width: 100%;
+  position: absolute;
+  bottom: 2rem;
+  width: calc(100% - 4rem);
   display: grid;
   grid-template-columns: auto 1fr auto;
+  align-items: center;
 }
 </style>

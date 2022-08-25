@@ -1,16 +1,16 @@
-@import "./base.css";
-
-#app {
-  margin: 0;
-  padding: 2rem;
-  height: 100vh;
-  height: calc(var(--vh, 1vh) * 100);
-  font-weight: normal;
-
+body {
   /* https: //www.magicpattern.design/tools/css-backgrounds */
   background-color: #f1f8e7;
   opacity: 1;
   background-image: radial-gradient(#7a9852 1px, #f1f8e7 1px);
   background-size: 20px 20px;
   background-repeat: repeat;
+}
+
+#app {
+  margin: 0;
+  padding: 0;
+  /* height: 100vh; */
+  /* height: calc(var(--vh, 1vh) * 100); */
+  font-weight: normal;
 }

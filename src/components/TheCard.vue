@@ -1,39 +1,50 @@
 <template>
-  <div class="card-wrapper" :style="{ maxWidth: `calc(var(--vh, 1vh) * ${maxWidth}` }">
-    <div class="card">
-      <div v-for="(col, x) in matrix" :key="'x-' + x" class="column">
-        <CardCell
-          v-for="(cell, y) in col.slice().reverse()"
-          :key="'y-' + y"
-          class="cell"
-          :value="cell"
-        />
+  <span class="wrapper">
+    <div class="card-wrapper" :style="{ maxWidth: `calc(var(--vh, 1vh) * ${maxWidth}` }">
+      <div class="card">
+        <div v-for="(col, x) in matrix" :key="'x-' + x" class="column">
+          <CardCell
+            v-for="(cell, y) in col.slice().reverse()"
+            :key="'y-' + y"
+            class="cell"
+            :value="cell"
+          />
+        </div>
       </div>
+      <div class="snow" v-if="settings.snow"></div>
     </div>
-    <div class="snow" v-if="snow"></div>
-  </div>
+    <span class="settings">
+      <CardSettings
+        :settings="settings"
+        :modifiers="modifiers"
+        @change="(newSettings) => $emit('change', newSettings)"
+      />
+    </span>
+  </span>
 </template>
 
 <script>
 import CardCell from "@/components/CardCell.vue";
+import CardSettings from "@/components/CardSettings.vue";
 
 export default {
   components: {
     CardCell,
+    CardSettings,
   },
+  emits: ["change"],
   props: {
     pieces: {
       required: true,
       type: Array,
     },
-    snow: {
+    settings: {
       required: true,
-      type: Boolean,
+      type: Object,
     },
-    rotate: {
+    modifiers: {
       required: true,
-      type: Number,
-      validator: (val) => [-1, 0, 1].includes(val),
+      type: Array,
     },
   },
   computed: {
@@ -50,10 +61,10 @@ export default {
         }
       });
 
-      if (this.rotate === -1) {
+      if (this.settings.rotate === -1) {
         // rotate counter-clockwise
         return matrix[0].map((val, index) => matrix.map((row) => row[row.length - 1 - index]));
-      } else if (this.rotate === 1) {
+      } else if (this.settings.rotate === 1) {
         // rotate clockwise
         return matrix[0].map((val, index) => matrix.map((row) => row[index]).reverse());
       } else {
@@ -78,6 +89,10 @@ export default {
 </script>
 
 <style scoped>
+.wrapper {
+  position: relative;
+}
+
 .card-wrapper {
   margin: auto;
 }
@@ -102,5 +117,11 @@ export default {
   background-color: white;
   margin-top: 1rem;
   border: 1px solid #7a9852;
+}
+
+.settings {
+  position: fixed;
+  top: 1rem;
+  right: 1rem;
 }
 </style>
