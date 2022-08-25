@@ -1,6 +1,6 @@
 <template>
   <span class="wrapper">
-    <div class="card-wrapper" :style="{ maxWidth: `calc(var(--vh, 1vh) * ${maxWidth}` }">
+    <div class="card-wrapper" :style="{ maxWidth: `calc(var(--vh, 1vh) * ${widthMultiplier}` }">
       <div class="card">
         <div v-for="(col, x) in matrix" :key="'x-' + x" class="column">
           <CardCell
@@ -71,13 +71,13 @@ export default {
         return matrix;
       }
     },
-    maxWidth() {
+    widthMultiplier() {
       if (this.matrix.length) {
         const colCount = this.matrix.length;
         const rowCount = this.matrix[0].length;
+        const hightRangeModifier = 1.5; // variable to control relative max height
 
-        const ratio = Math.round(100 * (colCount / rowCount / 2));
-        // cols = 6, rows = 12, ratio = 0.5 * 100 = 50
+        const ratio = Math.round(100 * (colCount / rowCount / hightRangeModifier));
 
         return ratio;
       } else {

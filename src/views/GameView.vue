@@ -44,6 +44,7 @@ export default {
     };
   },
   created() {
+    this.shuffleCards();
     this.randomizeModifiers();
   },
   computed: {
@@ -74,6 +75,12 @@ export default {
     },
     prevCard() {
       this.cardIndex--;
+    },
+    shuffleCards() {
+      for (let i = this.cards.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [this.cards[i], this.cards[j]] = [this.cards[j], this.cards[i]];
+      }
     },
   },
 };

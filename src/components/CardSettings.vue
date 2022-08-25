@@ -7,7 +7,7 @@
     </template>
     <v-list>
       <v-list-item
-        @click="$emit('change', { ...cardSettigns, snow: !settings.snow })"
+        @click="$emit('change', { ...settings, snow: !settings.snow })"
         :disabled="!modifiers.includes(mods.SNOW)"
       >
         <template v-slot:prepend>
@@ -17,7 +17,7 @@
         <v-list-item-title>{{ settings.snow ? "Remove" : "Add" }} Snow</v-list-item-title>
       </v-list-item>
       <v-list-item
-        @click="$emit('change', { ...cardSettigns, rotate: settings.rotate - 1 })"
+        @click="$emit('change', { ...settings, rotate: settings.rotate - 1 })"
         :disabled="!modifiers.includes(mods.ROTATE_LEFT) || settings.rotate === -1"
       >
         <template v-slot:prepend>
@@ -26,7 +26,7 @@
         <v-list-item-title>Rotate Left</v-list-item-title>
       </v-list-item>
       <v-list-item
-        @click="$emit('change', { ...cardSettigns, rotate: settings.rotate + 1 })"
+        @click="$emit('change', { ...settings, rotate: settings.rotate + 1 })"
         :disabled="!modifiers.includes(mods.ROTATE_RIGHT) || settings.rotate === 1"
       >
         <template v-slot:prepend>
