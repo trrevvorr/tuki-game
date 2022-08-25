@@ -1,7 +1,11 @@
 <template>
   <div class="game">
     <div class="card">
-      <TheCard :pieces="card.pieces" :snow="snow" :rotate="rotate" />
+      <TheCard
+        :pieces="card.pieces"
+        :snow="cardSettings[cardIndex].snow"
+        :rotate="cardSettings[cardIndex].rotate"
+      />
     </div>
 
     <div class="spacer"></div>
@@ -9,7 +13,7 @@
     <div class="controls">
       <v-sheet class="card-modifiers" color="white" elevation="1" rounded="true">
         <v-checkbox
-          v-model="snow"
+          v-model="cardSettings[cardIndex].snow"
           label="Snow"
           hide-details
           :disabled="!card.modifiers.includes(modifiers.SNOW)"
@@ -17,28 +21,32 @@
         <span class="spacer"></span>
         <v-btn
           icon
-          @click="rotate--"
-          :disabled="!card.modifiers.includes(modifiers.ROTATE_LEFT) || rotate === -1"
+          @click="cardSettings[cardIndex].rotate--"
+          :disabled="
+            !card.modifiers.includes(modifiers.ROTATE_LEFT) || cardSettings[cardIndex].rotate === -1
+          "
         >
           <v-icon> mdi-rotate-left </v-icon>
         </v-btn>
         <v-btn
           icon
-          @click="rotate++"
-          :disabled="!card.modifiers.includes(modifiers.ROTATE_RIGHT) || rotate === 1"
+          @click="cardSettings[cardIndex].rotate++"
+          :disabled="
+            !card.modifiers.includes(modifiers.ROTATE_RIGHT) || cardSettings[cardIndex].rotate === 1
+          "
         >
           <v-icon> mdi-rotate-right </v-icon>
         </v-btn>
         <span class="spacer"></span>
-        <v-btn @click="randomizeModifiers"> Randomize </v-btn>
+        <v-btn @click="randomizeModifiers"> Re-Randomize </v-btn>
       </v-sheet>
       <div class="card-navigation">
-        <v-btn @click="cardIndex--" :disabled="cardIndex === 0">
+        <v-btn @click="prevCard" :disabled="cardIndex === 0">
           <v-icon left> mdi-arrow-left </v-icon>
           Previous
         </v-btn>
         <span class="spacer"></span>
-        <v-btn @click="cardIndex++" :disabled="cardIndex === cards.length - 1">
+        <v-btn @click="nextCard" :disabled="cardIndex === cards.length - 1">
           Next
           <v-icon right> mdi-arrow-right </v-icon>
         </v-btn>
@@ -60,11 +68,13 @@ export default {
   data() {
     return {
       cardIndex: 0,
-      snow: false,
-      rotate: 0,
       cards,
       modifiers,
+      cardSettings: [{ snow: false, rotate: 0 }],
     };
+  },
+  created() {
+    this.randomizeModifiers();
   },
   computed: {
     card() {
@@ -73,13 +83,27 @@ export default {
   },
   methods: {
     randomizeModifiers() {
-      this.snow = this.card.modifiers.includes(modifiers.SNOW) ? !!Math.round(Math.random()) : 0;
+      this.cardSettings[this.cardIndex].snow = this.card.modifiers.includes(modifiers.SNOW)
+        ? !!Math.round(Math.random())
+        : 0;
       const rotateRange = [
         this.card.modifiers.includes(modifiers.ROTATE_LEFT) ? -1 : 0,
         this.card.modifiers.includes(modifiers.ROTATE_RIGHT) ? 1 : 0,
       ];
-      this.rotate =
+      this.cardSettings[this.cardIndex].rotate =
         Math.floor(Math.random() * (rotateRange[1] - rotateRange[0] + 1)) + rotateRange[0];
+    },
+    nextCard() {
+      if (this.cardIndex + 1 === this.cardSettings.length) {
+        this.cardSettings.push([{ snow: false, rotate: 0 }]);
+        this.cardIndex++;
+        this.randomizeModifiers();
+      } else {
+        this.cardIndex++;
+      }
+    },
+    prevCard() {
+      this.cardIndex--;
     },
   },
 };

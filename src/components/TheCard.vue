@@ -1,5 +1,5 @@
 <template>
-  <div class="card-wrapper" :style="{ maxWidth: maxWidth }">
+  <div class="card-wrapper" :style="{ maxWidth: `calc(var(--vh, 1vh) * ${maxWidth}` }">
     <div class="card">
       <div v-for="(col, x) in matrix" :key="'x-' + x" class="column">
         <CardCell
@@ -68,9 +68,9 @@ export default {
         const ratio = Math.round(100 * (colCount / rowCount / 2));
         // cols = 6, rows = 12, ratio = 0.5 * 100 = 50
 
-        return `${ratio}vh`;
+        return ratio;
       } else {
-        return "100vh";
+        return 100;
       }
     },
   },

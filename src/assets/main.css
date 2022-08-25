@@ -4,6 +4,7 @@
   margin: 0;
   padding: 2rem;
   height: 100vh;
+  height: calc(var(--vh, 1vh) * 100);
   font-weight: normal;
 
   background-color: #e7f3d5;
