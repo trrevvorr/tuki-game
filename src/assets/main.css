@@ -1,22 +1,14 @@
 @import "./base.css";
 
 #app {
-  max-width: 1280px;
-  margin: 0 auto;
+  margin: 0;
   padding: 2rem;
-
+  height: 100vh;
   font-weight: normal;
-}
 
-a,
-.green {
-  text-decoration: none;
-  color: hsla(160, 100%, 37%, 1);
-  transition: 0.4s;
-}
-
-@media (hover: hover) {
-  a:hover {
-    background-color: hsla(160, 100%, 37%, 0.2);
-  }
+  background-color: #e7f3d5;
+  opacity: 1;
+  background-image: radial-gradient(#7a9852 0.5px, #f1f8e7 0.5px);
+  background-size: 10px 10px;
+  background-repeat: repeat;
 }

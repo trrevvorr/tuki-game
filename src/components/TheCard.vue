@@ -1,5 +1,5 @@
 <template>
-  <div class="card-wrapper">
+  <div class="card-wrapper" :style="{ maxWidth: maxWidth }">
     <div class="card">
       <div v-for="(row, x) in matrix" :key="'x-' + x" class="column">
         <CardCell
@@ -30,6 +30,11 @@ export default {
       required: true,
       type: Boolean,
     },
+    rotate: {
+      required: true,
+      type: Number,
+      validator: (val) => [-1, 0, 1].includes(val),
+    },
   },
   computed: {
     matrix() {
@@ -56,27 +61,42 @@ export default {
         }
       });
 
-      return matrix;
+      if (this.rotate === -1) {
+        // rotate counter-clockwise
+        return matrix[0].map((val, index) => matrix.map((row) => row[row.length - 1 - index]));
+      } else if (this.rotate === 1) {
+        // rotate clockwise
+        return matrix[0].map((val, index) => matrix.map((row) => row[index]).reverse());
+      } else {
+        return matrix;
+      }
+    },
+    maxWidth() {
+      if (this.matrix.length) {
+        const colCount = this.matrix.length;
+        const rowCount = this.matrix[0].length;
+
+        const ratio = Math.round(100 * (colCount / rowCount / 2));
+        // cols = 6, rows = 12, ratio = 0.5 * 100 = 50
+
+        return `${ratio}vh`;
+      } else {
+        return "100vh";
+      }
     },
   },
 };
 </script>
 
 <style scoped>
+.card-wrapper {
+  margin: auto;
+}
+
 .card {
   display: grid;
   grid-auto-columns: minmax(0, 1fr);
   grid-auto-flow: column;
-}
-.card-wrapper {
-  background-color: #e7f3d5;
-  opacity: 1;
-  background-image: radial-gradient(#7a9852 0.5px, #f1f8e7 0.5px);
-  background-size: 10px 10px;
-  background-repeat: repeat;
-
-  padding: 1rem;
-  border-radius: 1rem;
 }
 
 .column {

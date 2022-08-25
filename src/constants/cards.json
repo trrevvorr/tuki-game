@@ -19,5 +19,26 @@
       ]
     ],
     "modifiers": ["SNOW", "ROTATE_LEFT", "ROTATE_RIGHT"]
-  }
+  },
+    {
+      "pieces": [
+        [
+          [11, 2],
+          [11, 6]
+        ],
+        [
+          [6, 3],
+          [10, 3]
+        ],
+        [
+          [5, 0],
+          [5, 4]
+        ],
+        [
+          [0, 0],
+          [4, 0]
+        ]
+      ],
+      "modifiers": ["SNOW", "ROTATE_LEFT", "ROTATE_RIGHT"]
+    }
 ]
