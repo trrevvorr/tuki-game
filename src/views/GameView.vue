@@ -37,8 +37,6 @@
         >
           <v-icon> mdi-rotate-right </v-icon>
         </v-btn>
-        <span class="spacer"></span>
-        <v-btn @click="randomizeModifiers"> Re-Randomize </v-btn>
       </v-sheet>
       <div class="card-navigation">
         <v-btn @click="prevCard" :disabled="cardIndex === 0">
@@ -127,7 +125,7 @@ export default {
 
 .card-modifiers {
   display: grid;
-  grid-template-columns: auto 1fr auto auto 1fr auto;
+  grid-template-columns: auto 1fr auto auto;
   column-gap: 1rem;
   padding: 0.5rem;
   align-items: center;
