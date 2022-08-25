@@ -1,9 +1,9 @@
 <template>
   <div class="card-wrapper" :style="{ maxWidth: maxWidth }">
     <div class="card">
-      <div v-for="(row, x) in matrix" :key="'x-' + x" class="column">
+      <div v-for="(col, x) in matrix" :key="'x-' + x" class="column">
         <CardCell
-          v-for="(cell, y) in row.slice().reverse()"
+          v-for="(cell, y) in col.slice().reverse()"
           :key="'y-' + y"
           class="cell"
           :value="cell"
@@ -38,22 +38,11 @@ export default {
   },
   computed: {
     matrix() {
-      const matrix = [];
+      const maxX = this.pieces.reduce((max, [start, end]) => Math.max(max, end[0]), 0);
+      const maxY = this.pieces.reduce((max, [start, end]) => Math.max(max, end[1]), 0);
+      const matrix = Array.from(Array(maxX + 1), () => Array.from(Array(maxY + 1), () => 0));
 
-      this.pieces.forEach((piece, index) => {
-        const [start, end] = piece;
-        const maxX = Math.max(start[0], end[0]);
-        const maxY = Math.max(start[1], end[1]);
-
-        for (let x = 0; x <= maxX; x++) {
-          if (!matrix[x]) {
-            matrix.push([]);
-          }
-          while (matrix[x].length <= maxY) {
-            matrix[x].push(0);
-          }
-        }
-
+      this.pieces.forEach(([start, end], index) => {
         for (let x = start[0]; x <= end[0]; x++) {
           for (let y = start[1]; y <= end[1]; y++) {
             matrix[x][y] = index + 1;
