@@ -23,6 +23,9 @@
       </v-btn>
     </div>
   </div>
+  <v-btn icon class="nav-button" size="small" @click="$router.push('/connect')"
+    ><v-icon> mdi-lan-connect </v-icon></v-btn
+  >
 </template>
 
 <script>
@@ -100,5 +103,10 @@ export default {
   display: grid;
   grid-template-columns: auto 1fr auto;
   align-items: center;
+}
+.nav-button {
+  position: fixed;
+  top: 1rem;
+  left: 1rem;
 }
 </style>

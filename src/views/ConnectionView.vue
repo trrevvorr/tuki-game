@@ -14,15 +14,13 @@
         <TheConnectionJoin @connection="(val) => (connectionState = val)" />
       </v-window-item>
     </v-window>
+    <v-btn @click="$router.push('/')">Play</v-btn>
+
     <div class="connection-status">
       <v-icon v-if="connectionState == 'connected'" large color="green darken-3">
         mdi-lan-connect
       </v-icon>
-      <v-icon
-        v-else-if="['checking', 'connecting'].includes(connectionState)"
-        large
-        color="amber"
-      >
+      <v-icon v-else-if="['checking', 'connecting'].includes(connectionState)" large color="amber">
         mdi-lan-pending
       </v-icon>
       <v-icon v-else large color="red darken-4"> mdi-lan-disconnect </v-icon>
@@ -52,6 +50,7 @@ export default {
 .connection {
   margin: 1rem auto;
   padding: 0.5rem 1rem;
+  padding-bottom: 1rem;
   max-width: 30rem;
   background-color: white;
   position: relative;
