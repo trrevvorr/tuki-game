@@ -1,11 +1,14 @@
-let isHost = null;
+type RtcEventHandler = (event: Event) => void;
+type StateChangeHandler = (newState: string) => void;
 
-async function initHost(
-  onOpen,
-  onMessage,
-  onConnectionStateChange,
-  onIceConnectionStateChange,
-  onIceCandidate
+let isHost: boolean | null = null;
+
+export async function initHost(
+  onOpen: RtcEventHandler,
+  onMessage: RtcEventHandler,
+  onConnectionStateChange: StateChangeHandler,
+  onIceConnectionStateChange: StateChangeHandler,
+  onIceCandidate: StateChangeHandler
 ) {
   if (isHost === false) {
     // TODO: allow user to host or join multiple RTC connections
@@ -20,14 +23,14 @@ async function initHost(
   return { connection, channel };
 }
 
-async function initJoin(
-  offer,
-  onDataChannel,
-  onOpen,
-  onMessage,
-  onConnectionStateChange,
-  onIceConnectionStateChange,
-  onIceCandidate
+export async function initJoin(
+  offer: string,
+  onDataChannel: RtcEventHandler,
+  onOpen: RtcEventHandler,
+  onMessage: RtcEventHandler,
+  onConnectionStateChange: StateChangeHandler,
+  onIceConnectionStateChange: StateChangeHandler,
+  onIceCandidate: StateChangeHandler
 ) {
   if (isHost === true) {
     // TODO: allow user to host or join multiple RTC connections
@@ -49,28 +52,36 @@ async function initJoin(
   return connection;
 }
 
-async function hostAccept(connection, answer) {
+export async function hostAccept(connection: RTCPeerConnection, answer: string) {
   await acceptJoinAnswer(connection, answer);
 }
 
-function init(onConnectionStateChange, onIceConnectionStateChange) {
+function init(
+  onConnectionStateChange: StateChangeHandler,
+  onIceConnectionStateChange: StateChangeHandler
+) {
   const connection = new RTCPeerConnection({
     iceServers: [{ urls: "stun:stun.l.google.com:19302" }],
   });
 
   connection.onconnectionstatechange = (event) => {
     console.debug("connection.onconnectionstatechange", event);
-    onConnectionStateChange(event.target.connectionState);
+    onConnectionStateChange(connection.connectionState);
   };
   connection.oniceconnectionstatechange = (event) => {
     console.debug("connection.oniceconnectionstatechange", event);
-    onIceConnectionStateChange(event.target.iceConnectionState);
+    onIceConnectionStateChange(connection.iceConnectionState);
   };
 
   return connection;
 }
 
-async function createHostOffer(connection, onOpen, onMessage, onIceCandidate) {
+async function createHostOffer(
+  connection: RTCPeerConnection,
+  onOpen: RtcEventHandler,
+  onMessage: RtcEventHandler,
+  onIceCandidate: StateChangeHandler
+) {
   const channel = connection.createDataChannel("data");
   channel.onopen = (event) => onOpen(event);
   channel.onmessage = (event) => onMessage(event);
@@ -78,7 +89,8 @@ async function createHostOffer(connection, onOpen, onMessage, onIceCandidate) {
   connection.onicecandidate = (event) => {
     console.debug("connection.onicecandidate", event);
     if (!event.candidate) {
-      onIceCandidate(btoa(event.target.localDescription.sdp));
+      const target = event.target as any;
+      onIceCandidate(btoa(target.localDescription.sdp));
     }
   };
 
@@ -88,16 +100,16 @@ async function createHostOffer(connection, onOpen, onMessage, onIceCandidate) {
   return channel;
 }
 
-async function acceptHostOffer(connection, offerString) {
-  const offer = { sdp: atob(offerString), type: 'offer'};
-  await connection.setRemoteDescription(offer);
+async function acceptHostOffer(connection: RTCPeerConnection, offerString: string) {
+  await connection.setRemoteDescription({ sdp: atob(offerString), type: "offer" });
 }
 
-async function createJoinAnswer(connection, onIceCandidate) {
+async function createJoinAnswer(connection: RTCPeerConnection, onIceCandidate: StateChangeHandler) {
   connection.onicecandidate = (event) => {
     console.debug("connection.onicecandidate", event);
     if (!event.candidate) {
-      onIceCandidate(btoa(event.target.localDescription.sdp));
+      const target = event.target as any;
+      onIceCandidate(btoa(target.localDescription.sdp));
     }
   };
 
@@ -105,11 +117,10 @@ async function createJoinAnswer(connection, onIceCandidate) {
   await connection.setLocalDescription(answer);
 }
 
-async function acceptJoinAnswer(connection, answerString) {
-  const answer = { sdp: atob(answerString), type: "answer" };
-  await connection.setRemoteDescription(answer);
+async function acceptJoinAnswer(connection: RTCPeerConnection, answerString: string) {
+  await connection.setRemoteDescription({ sdp: atob(answerString), type: "answer" });
 }
 
-async function send_text(channel, text) {
-  channel.send(text);
+export async function sendMessage(channel: RTCDataChannel, message: string) {
+  channel.send(message);
 }

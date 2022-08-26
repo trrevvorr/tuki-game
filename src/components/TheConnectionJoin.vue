@@ -9,15 +9,25 @@
           v-model="remoteOffer"
           @change="acceptInvitation"
           density="compact"
+          :disabled="step !== steps.INITIAL"
         ></v-text-field>
       </li>
-      <li><v-btn @click="generateResponse"> Generate Response Token </v-btn></li>
+      <li>
+        <v-btn @click="generateResponse" :disabled="step !== steps.ACCEPTED">
+          Generate Response Token
+        </v-btn>
+      </li>
     </ol>
     <br />
     <br />
-    <v-text-field label="message" hide-details="auto" v-model="message"></v-text-field>
+    <v-text-field
+      label="message"
+      hide-details="auto"
+      v-model="message"
+      :disabled="step !== steps.CONNECTED"
+    ></v-text-field>
     <br />
-    <v-btn @click="sendMessage"> Send </v-btn>
+    <v-btn @click="sendMessage" :disabled="step !== steps.CONNECTED"> Send </v-btn>
     <v-snackbar v-model="snackbar">
       {{ snackbarMessage }}
     </v-snackbar>
@@ -25,6 +35,14 @@
 </template>
 
 <script>
+import { initJoin, sendMessage } from "@/utils/webRtcConnection";
+
+const steps = Object.freeze({
+  INITIAL: "INITIAL",
+  ACCEPTED: "ACCEPTED",
+  CONNECTED: "CONNECTED",
+});
+
 export default {
   props: {},
   emits: ["connection"],
@@ -37,57 +55,44 @@ export default {
       remoteOffer: "",
       answer: "",
       message: "",
+      answerToken: "",
+      step: steps.INITIAL,
+      steps,
     };
-  },
-  created() {
-    this.connection = new RTCPeerConnection({
-      iceServers: [{ urls: "stun:stun.l.google.com:19302" }],
-    });
-
-    this.connection.ondatachannel = (event) => {
-      console.log("ondatachannel");
-      this.channel = event.channel;
-      // channel.onopen = event => console.log('onopen', event);
-      // channel.onmessage = event => console.log('onmessage', event);
-      this.channel.onmessage = (event) => this.displayMessage("Received: " + event.data);
-    };
-
-    this.connection.onconnectionstatechange = (event) => {
-      console.log("onconnectionstatechange", this.connection.connectionState);
-      this.$emit("connection", this.connection.connectionState);
-    };
-    this.connection.oniceconnectionstatechange = (event) =>
-      console.log("oniceconnectionstatechange", this.connection.iceConnectionState);
   },
   methods: {
     async acceptInvitation() {
+      initJoin(
+        this.remoteOffer,
+        (event) => (this.channel = event.channel),
+        (e) => this.onConnectionOpen(),
+        (e) => this.displayMessage(e.data),
+        (state) => this.$emit("connection", state),
+        (event) => console.log("onIceConnectionStateChange", event),
+        (answerToken) => (this.answerToken = answerToken)
+      ).then((connectionOut) => {
+        this.connection = connectionOut;
+        console.info("connection established as join");
+        this.step = steps.ACCEPTED;
+      });
+
       const offer = JSON.parse(this.remoteOffer);
       await this.connection.setRemoteDescription(offer);
     },
     async generateResponse() {
-      this.connection.onicecandidate = (event) => {
-        console.log("onicecandidate", event);
-        if (!event.candidate) {
-          this.copy(JSON.stringify(this.connection.localDescription));
-        }
-      };
-
-      const answer = await this.connection.createAnswer();
-      await this.connection.setLocalDescription(answer);
+      this.copy(this.answerToken);
     },
     async sendMessage() {
-      this.channel.send(this.message);
+      sendMessage(this.channel, this.message);
+      this.message = "";
+    },
+    onConnectionOpen() {
+      this.step = steps.CONNECTED;
     },
     copy(text) {
-      navigator.clipboard
-        .writeText(text)
-        .then(() => {
-          this.displayMessage("copied to clipboard");
-        })
-        .catch((err) => {
-          console.error(err);
-          this.displayMessage("failed to copy to clipboard");
-        });
+      navigator.clipboard.writeText(text).then(() => {
+        this.displayMessage("copied to clipboard");
+      });
     },
     displayMessage(text) {
       this.snackbarMessage = text;

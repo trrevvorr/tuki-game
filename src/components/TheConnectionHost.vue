@@ -1,7 +1,11 @@
 <template>
   <div class="connection">
     <ol>
-      <li><v-btn @click="generateInvitation"> Generate Invitation Token </v-btn></li>
+      <li>
+        <v-btn @click="generateInvitation" :disabled="![steps.INITIAL, steps.INVITED].includes(step)">
+          Generate Invitation Token
+        </v-btn>
+      </li>
       <li>Send invitation token to peer</li>
       <li>Ask peer for response token</li>
       <li>
@@ -11,14 +15,20 @@
           v-model="answer"
           @change="acceptResponse"
           density="compact"
+          :disabled="step !== steps.INVITED"
         ></v-text-field>
       </li>
     </ol>
     <br />
     <br />
-    <v-text-field label="message" hide-details="auto" v-model="message"></v-text-field>
+    <v-text-field
+      label="message"
+      hide-details="auto"
+      v-model="message"
+      :disabled="step !== steps.CONNECTED"
+    ></v-text-field>
     <br />
-    <v-btn @click="sendMessage"> Send </v-btn>
+    <v-btn @click="sendMessage" :disabled="step !== steps.CONNECTED"> Send </v-btn>
     <v-snackbar v-model="snackbar">
       {{ snackbarMessage }}
     </v-snackbar>
@@ -26,6 +36,15 @@
 </template>
 
 <script>
+import { initHost, hostAccept, sendMessage } from "@/utils/webRtcConnection";
+
+const steps = Object.freeze({
+  INITIAL: "INITIAL",
+  INVITED: "INVITED",
+  ACCEPTED: "ACCEPTED",
+  CONNECTED: "CONNECTED",
+});
+
 export default {
   props: {},
   emits: ["connection"],
@@ -37,66 +56,39 @@ export default {
       channel: null,
       answer: "",
       message: "",
+      step: steps.INITIAL,
+      steps,
     };
-  },
-  created() {
-    this.connection = new RTCPeerConnection({
-      iceServers: [{ urls: "stun:stun.l.google.com:19302" }],
-    });
-
-    this.connection.ondatachannel = (event) => {
-      console.log("ondatachannel");
-      this.channel = event.channel;
-      // channel.onopen = event => console.log('onopen', event);
-      // channel.onmessage = event => console.log('onmessage', event);
-      this.channel.onmessage = (event) => this.displayMessage("Received: " + event.data);
-    };
-
-    this.connection.onconnectionstatechange = (event) => {
-      console.log("onconnectionstatechange", this.connection.connectionState);
-      this.$emit("connection", this.connection.connectionState);
-    };
-    this.connection.oniceconnectionstatechange = (event) =>
-      console.log("oniceconnectionstatechange", this.connection.iceConnectionState);
   },
   methods: {
-    async generateInvitation() {
-      this.channel = this.connection.createDataChannel("data");
-      // channel.onopen = event => console.log('onopen', event)
-      // channel.onmessage = event => console.log('onmessage', event)
-      this.channel.onmessage = (event) => this.displayMessage("Received: " + event.data);
-
-      this.connection.onicecandidate = (event) => {
-        console.log("onicecandidate", event);
-        console.log(
-          "connection.localDescription",
-          JSON.stringify(this.connection.localDescription)
-        );
-        if (!event.candidate) {
-          this.copy(JSON.stringify(this.connection.localDescription));
-        }
-      };
-
-      const offer = await this.connection.createOffer();
-      await this.connection.setLocalDescription(offer);
+    generateInvitation() {
+      return initHost(
+        (e) => this.onConnectionOpen(),
+        (e) => this.displayMessage(e.data),
+        (state) => this.$emit("connection", state),
+        (e) => console.log("onIceConnectionStateChange", e),
+        (offerToken) => this.copy(offerToken)
+      ).then((output) => {
+        this.connection = output.connection;
+        this.channel = output.channel;
+        console.info("connection established as host");
+        this.step = steps.INVITED;
+      });
     },
-    async acceptResponse() {
-      const answer = JSON.parse(this.answer);
-      await this.connection.setRemoteDescription(answer);
+    acceptResponse() {
+      return hostAccept(this.connection, this.answer).then(() => (this.step = steps.ACCEPTED));
     },
     async sendMessage() {
-      this.channel.send(this.message);
+      sendMessage(this.channel, this.message);
+      this.message = "";
+    },
+    onConnectionOpen() {
+      this.step = steps.CONNECTED;
     },
     copy(text) {
-      navigator.clipboard
-        .writeText(text)
-        .then(() => {
-          this.displayMessage("copied to clipboard");
-        })
-        .catch((err) => {
-          console.error(err);
-          this.displayMessage("failed to copy to clipboard");
-        });
+      navigator.clipboard.writeText(text).then(() => {
+        this.displayMessage("copied to clipboard");
+      });
     },
     displayMessage(text) {
       this.snackbarMessage = text;
