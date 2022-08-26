@@ -20,9 +20,7 @@
       <v-icon v-if="connectionState == 'connected'" large color="green darken-3">
         mdi-lan-connect
       </v-icon>
-      <v-icon v-else-if="['checking', 'connecting'].includes(connectionState)" large color="amber">
-        mdi-lan-pending
-      </v-icon>
+      <v-icon v-else-if="connectionState === 'connecting'" large color="amber"> mdi-lan-pending </v-icon>
       <v-icon v-else large color="red darken-4"> mdi-lan-disconnect </v-icon>
     </div>
   </div>
@@ -44,87 +42,6 @@ export default {
     };
   },
 };
-/*
-let connection, channel;
-        const displayMessage = (message, sent) => {
-            messageEl = document.createElement("li");
-            messageEl.className = sent ? "sent" : "received";
-            messageEl.textContent = message;
-
-            document.getElementById("messages").append(messageEl);
-        }
-        const onOpen = (event) => {
-            console.log('onOpen', event)
-            document.getElementById('message-input').removeAttribute("disabled");
-            document.getElementById('send-message').removeAttribute("disabled");
-        }
-        const onMessage = (event) => {
-            displayMessage(event.data, false);
-        }
-        const copyText = (text) => (navigator.clipboard.writeText(text)
-            .then(() => console.info("copied text"))
-            .catch(() => console.info("failed to copy text")))
-        const onConnectionStateChange = (state) => document.getElementById("connection-status").className = state
-
-        const hostConnection = () => {
-            initHost(
-                onOpen,
-                onMessage,
-                onConnectionStateChange,
-                (event) => console.log('onIceConnectionStateChange', event),
-                (offerToken) => copyText(offerToken)
-            ).then(output => {
-                connection = output.connection;
-                channel = output.channel;
-                console.info("connection established as host");
-                document.getElementById('host-connection').setAttribute("disabled", true);
-            });
-            document.getElementById('join-input').setAttribute("disabled", true);
-            document.getElementById('join-connection').setAttribute("disabled", true);
-            document.getElementById('accept-input').removeAttribute("disabled");
-            document.getElementById('accept-connection').removeAttribute("disabled");
-        };
-        document.getElementById("host-connection").addEventListener("click", hostConnection);
-
-        const joinConnection = async () => {
-            initJoin(
-                document.getElementById('join-input').value,
-                (event) => channel = event.channel,
-                onOpen,
-                onMessage,
-                onConnectionStateChange,
-                (event) => console.log('onIceConnectionStateChange', event),
-                (answerToken) => copyText(answerToken)
-            ).then(connectionOut => {
-                connection = connectionOut;
-                console.info("connection established as join");
-                document.getElementById('host-connection').setAttribute("disabled", true);
-                document.getElementById('join-input').setAttribute("disabled", true);
-                document.getElementById('join-connection').setAttribute("disabled", true);
-            });
-        };
-        document.getElementById("join-connection").addEventListener("click", joinConnection);
-
-        const acceptConnection = () => {
-            hostAccept(
-                connection,
-                document.getElementById('accept-input').value
-            ).then(() => {
-                document.getElementById('accept-input').setAttribute("disabled", true);
-                document.getElementById('accept-connection').setAttribute("disabled", true);
-            });
-        };
-        document.getElementById("accept-connection").addEventListener("click", acceptConnection);
-
-        const sendMessage = () => {
-            const el = document.getElementById('message-input');
-            const message = el.value;
-            el.value = "";
-            send_text(channel, message);
-            displayMessage(message, true);
-        }
-        document.getElementById("send-message").addEventListener("click", sendMessage);
-*/
 </script>
 
 <style scoped>
