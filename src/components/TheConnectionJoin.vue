@@ -2,15 +2,18 @@
   <div class="connection">
     <ol>
       <li>Ask host for invitation token</li>
-      <li>
-        <v-text-field
-          label="paste invitation token here"
-          hide-details="auto"
-          v-model="remoteOffer"
-          @change="acceptInvitation"
-          density="compact"
-          :disabled="step !== steps.INITIAL"
-        ></v-text-field>
+      <li v-show="step == steps.INITIAL || step == steps.SCAN">
+        <v-btn @click="scan"> Scan QR Code </v-btn>
+        <div v-show="step === steps.SCAN">
+          <video ref="scanner"></video>
+          <v-text-field
+            label="paste invitation token here"
+            hide-details="auto"
+            v-model="remoteOffer"
+            @change="acceptInvitation"
+            density="compact"
+          ></v-text-field>
+        </div>
       </li>
       <li>
         <v-btn @click="generateResponse" :disabled="step !== steps.ACCEPTED">
@@ -38,9 +41,11 @@
 <script>
 import { initJoin, sendMessage } from "@/utils/webRtcConnection";
 import QRCode from "qrcode";
+import QrScanner from "qr-scanner";
 
 const steps = Object.freeze({
   INITIAL: "INITIAL",
+  SCAN: "SCAN",
   ACCEPTED: "ACCEPTED",
   CONNECTED: "CONNECTED",
 });
@@ -61,7 +66,15 @@ export default {
       answerTokenReady: false,
       step: steps.INITIAL,
       steps,
+      qrScanner: null,
     };
+  },
+  mounted() {
+    this.qrScanner = new QrScanner(this.$refs.scanner, (result) => {
+      console.log("decoded qr code:", result);
+      this.remoteOffer = result;
+      this.acceptInvitation();
+    });
   },
   methods: {
     async acceptInvitation() {
@@ -77,10 +90,8 @@ export default {
         this.connection = connectionOut;
         console.info("connection established as join");
         this.step = steps.ACCEPTED;
+        this.qrScanner.stop();
       });
-
-      const offer = JSON.parse(this.remoteOffer);
-      await this.connection.setRemoteDescription(offer);
     },
     async generateResponse() {
       console.log("answer token", this.answerToken);
@@ -108,6 +119,10 @@ export default {
       QRCode.toCanvas(this.$refs.canvas, dataString).catch((err) => {
         console.error(err);
       });
+    },
+    scan() {
+      this.step = steps.SCAN;
+      this.qrScanner.start();
     },
   },
 };
