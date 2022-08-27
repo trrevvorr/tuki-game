@@ -1,44 +1,47 @@
 <template>
   <div class="connection">
-    <ol>
-      <li>
-        <v-btn
-          @click="generateInvitation"
-          :disabled="![steps.INITIAL, steps.INVITED].includes(step)"
-        >
-          Generate Invitation Token
-        </v-btn>
-        <canvas
-          v-show="offerToken && [steps.INITIAL, steps.INVITED].includes(step)"
-          ref="canvas"
-        ></canvas>
-      </li>
-      <li>Peer scans QR code</li>
-      <li>Scan peer's QR code</li>
-      <li v-show="step == steps.INVITED || step == steps.SCAN">
-        <v-btn @click="scan"> Scan QR Code </v-btn>
-        <div v-show="step === steps.SCAN">
-          <video ref="scanner"></video>
-          <v-text-field
-            label="paste response token here"
-            hide-details="auto"
-            v-model="answer"
-            @change="acceptResponse"
-            density="compact"
-          ></v-text-field>
-        </div>
-      </li>
-    </ol>
-    <br />
-    <br />
-    <v-text-field
-      label="message"
-      hide-details="auto"
-      v-model="message"
-      :disabled="step !== steps.CONNECTED"
-    ></v-text-field>
-    <br />
-    <v-btn @click="sendMessage" :disabled="step !== steps.CONNECTED"> Send </v-btn>
+    <div class="start step" v-if="step === steps.INITIAL">
+      <v-btn @click="generateInvitation"> Generate Invitation Token </v-btn>
+    </div>
+    <div class="qrcode step" v-show="offerToken && [steps.INITIAL, steps.INVITED].includes(step)">
+      <canvas ref="canvas"></canvas>
+      <v-text-field
+        hide-details="auto"
+        v-model="offerToken"
+        readonly
+        density="compact"
+        class="input-field"
+        variant="outlined"
+      ></v-text-field>
+      <div>Ask peer to scan QR code.</div>
+    </div>
+    <div class="qrcode-scanner step" v-show="[steps.SCAN, steps.PEER_ACCEPTED].includes(step)">
+      <v-btn v-if="step === steps.PEER_ACCEPTED" @click="scan"> Scan QR Code </v-btn>
+      <div class="step" v-show="step === steps.SCAN">
+        <video ref="scanner"></video>
+        <br />
+        <v-text-field
+          label="or paste response token here"
+          hide-details="auto"
+          v-model="answer"
+          @change="acceptResponse"
+          class="input-field"
+          variant="outlined"
+          density="compact"
+        ></v-text-field>
+        Scan peer's QR code
+      </div>
+    </div>
+    <div class="message step" v-if="step === steps.CONNECTED">
+      <v-text-field
+        label="message"
+        hide-details="auto"
+        v-model="message"
+        class="input-field"
+      ></v-text-field>
+      <br />
+      <v-btn @click="sendMessage"> Send </v-btn>
+    </div>
     <v-snackbar v-model="snackbar">
       {{ snackbarMessage }}
     </v-snackbar>
@@ -53,6 +56,7 @@ import QrScanner from "qr-scanner";
 const steps = Object.freeze({
   INITIAL: "INITIAL",
   INVITED: "INVITED",
+  PEER_ACCEPTED: "PEER_ACCEPTED",
   SCAN: "SCAN",
   ACCEPTED: "ACCEPTED",
   CONNECTED: "CONNECTED",
@@ -91,7 +95,6 @@ export default {
   watch: {
     offerToken() {
       console.log("offer token", this.offerToken);
-      this.copy(this.offerToken);
       this.renderQrCode(this.offerToken);
     },
   },
@@ -100,7 +103,12 @@ export default {
       return initHost(
         (e) => this.onConnectionOpen(),
         (e) => this.displayMessage(e.data),
-        (state) => this.$emit("connection", state),
+        (state) => {
+          this.$emit("connection", state);
+          if (state === "connecting") {
+            this.step = steps.PEER_ACCEPTED;
+          }
+        },
         (e) => console.log("onIceConnectionStateChange", e),
         (offerToken) => (this.offerToken = offerToken)
       ).then((output) => {
@@ -123,17 +131,12 @@ export default {
     onConnectionOpen() {
       this.step = steps.CONNECTED;
     },
-    copy(text) {
-      navigator.clipboard.writeText(text).then(() => {
-        this.displayMessage("copied to clipboard");
-      });
-    },
     displayMessage(text) {
       this.snackbarMessage = text;
       this.snackbar = true;
     },
     renderQrCode(dataString) {
-      QRCode.toCanvas(this.$refs.canvas, dataString).catch((err) => {
+      QRCode.toCanvas(this.$refs.canvas, dataString, { errorCorrectionLevel: "L" }).catch((err) => {
         console.error(err);
       });
     },
@@ -154,5 +157,15 @@ export default {
 
 li {
   margin-bottom: 0.5rem;
+}
+
+.step {
+  justify-items: center;
+  display: grid;
+}
+
+.input-field {
+  width: 20rem;
+  margin-top: 1rem;
 }
 </style>

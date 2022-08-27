@@ -1,37 +1,48 @@
 <template>
   <div class="connection">
-    <ol>
-      <li>Ask host for invitation token</li>
-      <li v-show="step == steps.INITIAL || step == steps.SCAN">
-        <v-btn @click="scan"> Scan QR Code </v-btn>
-        <div v-show="step === steps.SCAN">
-          <video ref="scanner"></video>
-          <v-text-field
-            label="paste invitation token here"
-            hide-details="auto"
-            v-model="remoteOffer"
-            @change="acceptInvitation"
-            density="compact"
-          ></v-text-field>
-        </div>
-      </li>
-      <li>
-        <v-btn @click="generateResponse" :disabled="step !== steps.ACCEPTED">
-          Generate Response Token
-        </v-btn>
-        <canvas v-show="answerTokenReady && step !== steps.CONNECTED" ref="canvas"></canvas>
-      </li>
-    </ol>
-    <br />
-    <br />
-    <v-text-field
-      label="message"
-      hide-details="auto"
-      v-model="message"
-      :disabled="step !== steps.CONNECTED"
-    ></v-text-field>
-    <br />
-    <v-btn @click="sendMessage" :disabled="step !== steps.CONNECTED"> Send </v-btn>
+    <div class="scan step" v-show="step == steps.INITIAL || step == steps.SCAN">
+      <v-btn @click="scan" v-if="step == steps.INITIAL"> Scan Host's QR Code </v-btn>
+      <div class="step" v-show="step === steps.SCAN">
+        <video ref="scanner"></video>
+        <v-text-field
+          label="or paste invitation token here"
+          class="input-field"
+          hide-details="auto"
+          v-model="remoteOffer"
+          @change="acceptInvitation"
+          variant="outlined"
+          density="compact"
+        ></v-text-field>
+      </div>
+    </div>
+    <div class="qr-code step" v-show="[steps.ACCEPTED, steps.QR].includes(step)">
+      <v-btn @click="generateResponse" v-if="step === steps.ACCEPTED">
+        Generate Response Token
+      </v-btn>
+      <div class="step" v-show="step === steps.QR">
+        <canvas ref="canvas"></canvas>
+        <v-text-field
+          hide-details="auto"
+          v-model="answerToken"
+          readonly
+          density="compact"
+          class="input-field"
+          variant="outlined"
+        ></v-text-field>
+        <div>Ask host to scan QR code.</div>
+      </div>
+    </div>
+    <div class="message step" v-if="step === steps.CONNECTED">
+      <v-text-field
+        label="message"
+        hide-details="auto"
+        v-model="message"
+        :disabled="step !== steps.CONNECTED"
+        class="input-field"
+      ></v-text-field>
+      <br />
+      <v-btn @click="sendMessage" :disabled="step !== steps.CONNECTED"> Send </v-btn>
+    </div>
     <v-snackbar v-model="snackbar">
       {{ snackbarMessage }}
     </v-snackbar>
@@ -47,6 +58,7 @@ const steps = Object.freeze({
   INITIAL: "INITIAL",
   SCAN: "SCAN",
   ACCEPTED: "ACCEPTED",
+  QR: "QR",
   CONNECTED: "CONNECTED",
 });
 
@@ -63,7 +75,6 @@ export default {
       answer: "",
       message: "",
       answerToken: "",
-      answerTokenReady: false,
       step: steps.INITIAL,
       steps,
       qrScanner: null,
@@ -79,7 +90,7 @@ export default {
           this.acceptInvitation();
         }
       },
-      { highlightScanRegion: true, highlightCodeOutline: true, returnDetailedScanResult: true}
+      { highlightScanRegion: true, highlightCodeOutline: true, returnDetailedScanResult: true }
     );
   },
   methods: {
@@ -101,9 +112,8 @@ export default {
     },
     async generateResponse() {
       console.log("answer token", this.answerToken);
-      this.copy(this.answerToken);
       this.renderQrCode(this.answerToken);
-      this.answerTokenReady = true;
+      this.step = steps.QR;
     },
     async sendMessage() {
       sendMessage(this.channel, this.message);
@@ -112,17 +122,12 @@ export default {
     onConnectionOpen() {
       this.step = steps.CONNECTED;
     },
-    copy(text) {
-      navigator.clipboard.writeText(text).then(() => {
-        this.displayMessage("copied to clipboard");
-      });
-    },
     displayMessage(text) {
       this.snackbarMessage = text;
       this.snackbar = true;
     },
     renderQrCode(dataString) {
-      QRCode.toCanvas(this.$refs.canvas, dataString).catch((err) => {
+      QRCode.toCanvas(this.$refs.canvas, dataString, { errorCorrectionLevel: "L" }).catch((err) => {
         console.error(err);
       });
     },
@@ -143,5 +148,15 @@ export default {
 
 li {
   margin-bottom: 0.5rem;
+}
+
+.step {
+  justify-items: center;
+  display: grid;
+}
+
+.input-field {
+  width: 20rem;
+  margin-top: 1rem;
 }
 </style>
