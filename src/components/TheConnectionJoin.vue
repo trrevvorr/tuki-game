@@ -3,7 +3,7 @@
     <div class="scan step" v-show="step == steps.INITIAL || step == steps.SCAN">
       <v-btn @click="scan" v-if="step == steps.INITIAL"> Scan Host's QR Code </v-btn>
       <div class="step" v-show="step === steps.SCAN">
-        <video ref="scanner"></video>
+        <video ref="scanner" :style="{ maxWidth: '100%' }"></video>
         <v-text-field
           label="or paste invitation token here"
           class="input-field"

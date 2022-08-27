@@ -18,7 +18,7 @@
     <div class="qrcode-scanner step" v-show="[steps.SCAN, steps.PEER_ACCEPTED].includes(step)">
       <v-btn v-if="step === steps.PEER_ACCEPTED" @click="scan"> Scan QR Code </v-btn>
       <div class="step" v-show="step === steps.SCAN">
-        <video ref="scanner"></video>
+        <video ref="scanner" :style="{ maxWidth: '100%' }"></video>
         <br />
         <v-text-field
           label="or paste response token here"
