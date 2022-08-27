@@ -5,7 +5,7 @@
     <div class="scan step" v-show="step == steps.INITIAL || step == steps.SCAN">
       <v-btn @click="scan" v-if="step == steps.INITIAL"> Scan Host's QR Code </v-btn>
       <div class="step" v-show="step === steps.SCAN">
-        <video ref="scanner" :style="{ maxWidth: 'calc(100vw - 6rem)' }"></video>
+        <video ref="scanner" :style="{ maxWidth: '100%' }"></video>
         <v-text-field
           label="or paste invitation token here"
           class="input-field"
@@ -143,7 +143,6 @@ export default {
 
 <style scoped>
 .connection {
-  padding: 2rem;
   max-width: 1280px;
   margin: auto;
   text-align: center;
@@ -163,12 +162,13 @@ li {
 }
 
 .input-field {
-  width: 20rem;
+  max-width: 20rem;
   margin-top: 1rem;
-  max-width: calc(100vw - 6rem);
+  width: 100%;
 }
 
 .qrcode canvas {
   max-width: calc(100vw - 6rem);
+  max-height: calc(100vw - 6rem);
 }
 </style>
