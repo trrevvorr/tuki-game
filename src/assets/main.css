@@ -9,8 +9,6 @@ body {
 
 #app {
   margin: 0;
-  padding: 0;
-  /* height: 100vh; */
-  /* height: calc(var(--vh, 1vh) * 100); */
+  padding: 1rem;
   font-weight: normal;
 }

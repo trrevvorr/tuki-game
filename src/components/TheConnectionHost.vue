@@ -1,5 +1,7 @@
 <template>
   <div class="connection">
+    <h2>Host Connection</h2>
+
     <div class="start step" v-if="step === steps.INITIAL">
       <v-btn @click="generateInvitation"> Generate Invitation Token </v-btn>
     </div>
@@ -13,7 +15,7 @@
         class="input-field"
         variant="outlined"
       ></v-text-field>
-      <div>Ask peer to scan QR code.</div>
+      <div>Ask peer to scan QR code or copy token above</div>
     </div>
     <div class="qrcode-scanner step" v-show="[steps.SCAN, steps.PEER_ACCEPTED].includes(step)">
       <v-btn v-if="step === steps.PEER_ACCEPTED" @click="scan"> Scan QR Code </v-btn>
@@ -150,9 +152,13 @@ export default {
 
 <style scoped>
 .connection {
-  padding: 2rem;
   max-width: 1280px;
   margin: auto;
+  text-align: center;
+}
+
+h2 {
+  margin-bottom: 1rem;
 }
 
 li {
@@ -166,6 +172,12 @@ li {
 
 .input-field {
   width: 20rem;
+  max-width: calc(100vw - 6rem);
   margin-top: 1rem;
+}
+
+.qrcode canvas {
+  max-width: calc(100vw - 6rem);
+  max-height: calc(100vw - 6rem);
 }
 </style>

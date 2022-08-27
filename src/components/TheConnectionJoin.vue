@@ -1,9 +1,11 @@
 <template>
   <div class="connection">
+    <h2>Join Connection</h2>
+
     <div class="scan step" v-show="step == steps.INITIAL || step == steps.SCAN">
       <v-btn @click="scan" v-if="step == steps.INITIAL"> Scan Host's QR Code </v-btn>
       <div class="step" v-show="step === steps.SCAN">
-        <video ref="scanner" :style="{ maxWidth: '100%' }"></video>
+        <video ref="scanner" :style="{ maxWidth: 'calc(100vw - 6rem)' }"></video>
         <v-text-field
           label="or paste invitation token here"
           class="input-field"
@@ -15,7 +17,7 @@
         ></v-text-field>
       </div>
     </div>
-    <div class="qr-code step" v-show="[steps.ACCEPTED, steps.QR].includes(step)">
+    <div class="qrcode step" v-show="[steps.ACCEPTED, steps.QR].includes(step)">
       <v-btn @click="generateResponse" v-if="step === steps.ACCEPTED">
         Generate Response Token
       </v-btn>
@@ -144,6 +146,11 @@ export default {
   padding: 2rem;
   max-width: 1280px;
   margin: auto;
+  text-align: center;
+}
+
+h2 {
+  margin-bottom: 1rem;
 }
 
 li {
@@ -158,5 +165,10 @@ li {
 .input-field {
   width: 20rem;
   margin-top: 1rem;
+  max-width: calc(100vw - 6rem);
+}
+
+.qrcode canvas {
+  max-width: calc(100vw - 6rem);
 }
 </style>
