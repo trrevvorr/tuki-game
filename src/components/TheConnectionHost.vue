@@ -15,15 +15,18 @@
       </li>
       <li>Peer scans QR code</li>
       <li>Scan peer's QR code</li>
-      <li>
-        <v-text-field
-          label="paste response token here"
-          hide-details="auto"
-          v-model="answer"
-          @change="acceptResponse"
-          density="compact"
-          :disabled="step !== steps.INVITED"
-        ></v-text-field>
+      <li v-show="step == steps.INVITED || step == steps.SCAN">
+        <v-btn @click="scan"> Scan QR Code </v-btn>
+        <div v-show="step === steps.SCAN">
+          <video ref="scanner"></video>
+          <v-text-field
+            label="paste response token here"
+            hide-details="auto"
+            v-model="answer"
+            @change="acceptResponse"
+            density="compact"
+          ></v-text-field>
+        </div>
       </li>
     </ol>
     <br />
@@ -45,10 +48,12 @@
 <script>
 import { initHost, hostAccept, sendMessage } from "@/utils/webRtcConnection";
 import QRCode from "qrcode";
+import QrScanner from "qr-scanner";
 
 const steps = Object.freeze({
   INITIAL: "INITIAL",
   INVITED: "INVITED",
+  SCAN: "SCAN",
   ACCEPTED: "ACCEPTED",
   CONNECTED: "CONNECTED",
 });
@@ -67,7 +72,21 @@ export default {
       step: steps.INITIAL,
       steps,
       offerToken: "",
+      qrScanner: null,
     };
+  },
+  mounted() {
+    this.qrScanner = new QrScanner(
+      this.$refs.scanner,
+      (result) => {
+        console.log("decoded qr code:", result);
+        if (typeof result.data === "string") {
+          this.answer = result.data;
+          this.acceptResponse();
+        }
+      },
+      { highlightScanRegion: true, highlightCodeOutline: true, returnDetailedScanResult: true }
+    );
   },
   watch: {
     offerToken() {
@@ -92,7 +111,10 @@ export default {
       });
     },
     acceptResponse() {
-      return hostAccept(this.connection, this.answer).then(() => (this.step = steps.ACCEPTED));
+      return hostAccept(this.connection, this.answer).then(() => {
+        this.step = steps.ACCEPTED;
+        this.qrScanner.stop();
+      });
     },
     async sendMessage() {
       sendMessage(this.channel, this.message);
@@ -114,6 +136,10 @@ export default {
       QRCode.toCanvas(this.$refs.canvas, dataString).catch((err) => {
         console.error(err);
       });
+    },
+    scan() {
+      this.step = steps.SCAN;
+      this.qrScanner.start();
     },
   },
 };

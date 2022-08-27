@@ -70,11 +70,17 @@ export default {
     };
   },
   mounted() {
-    this.qrScanner = new QrScanner(this.$refs.scanner, (result) => {
-      console.log("decoded qr code:", result);
-      this.remoteOffer = result;
-      this.acceptInvitation();
-    });
+    this.qrScanner = new QrScanner(
+      this.$refs.scanner,
+      (result) => {
+        console.log("decoded qr code:", result);
+        if (typeof result.data === "string") {
+          this.remoteOffer = result.data;
+          this.acceptInvitation();
+        }
+      },
+      { highlightScanRegion: true, highlightCodeOutline: true, returnDetailedScanResult: true}
+    );
   },
   methods: {
     async acceptInvitation() {
