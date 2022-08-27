@@ -16,6 +16,7 @@
         <v-btn @click="generateResponse" :disabled="step !== steps.ACCEPTED">
           Generate Response Token
         </v-btn>
+        <canvas v-show="answerTokenReady && step !== steps.CONNECTED" ref="canvas"></canvas>
       </li>
     </ol>
     <br />
@@ -36,6 +37,7 @@
 
 <script>
 import { initJoin, sendMessage } from "@/utils/webRtcConnection";
+import QRCode from "qrcode";
 
 const steps = Object.freeze({
   INITIAL: "INITIAL",
@@ -56,6 +58,7 @@ export default {
       answer: "",
       message: "",
       answerToken: "",
+      answerTokenReady: false,
       step: steps.INITIAL,
       steps,
     };
@@ -80,7 +83,10 @@ export default {
       await this.connection.setRemoteDescription(offer);
     },
     async generateResponse() {
+      console.log("answer token", this.answerToken);
       this.copy(this.answerToken);
+      this.renderQrCode(this.answerToken);
+      this.answerTokenReady = true;
     },
     async sendMessage() {
       sendMessage(this.channel, this.message);
@@ -97,6 +103,11 @@ export default {
     displayMessage(text) {
       this.snackbarMessage = text;
       this.snackbar = true;
+    },
+    renderQrCode(dataString) {
+      QRCode.toCanvas(this.$refs.canvas, dataString).catch((err) => {
+        console.error(err);
+      });
     },
   },
 };

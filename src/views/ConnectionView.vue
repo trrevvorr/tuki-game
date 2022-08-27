@@ -49,7 +49,7 @@ export default {
   margin: 1rem auto;
   padding: 0.5rem 1rem;
   padding-bottom: 1rem;
-  max-width: 30rem;
+  max-width: 50rem;
   background-color: white;
   position: relative;
 }

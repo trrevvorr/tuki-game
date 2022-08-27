@@ -2,12 +2,19 @@
   <div class="connection">
     <ol>
       <li>
-        <v-btn @click="generateInvitation" :disabled="![steps.INITIAL, steps.INVITED].includes(step)">
+        <v-btn
+          @click="generateInvitation"
+          :disabled="![steps.INITIAL, steps.INVITED].includes(step)"
+        >
           Generate Invitation Token
         </v-btn>
+        <canvas
+          v-show="offerToken && [steps.INITIAL, steps.INVITED].includes(step)"
+          ref="canvas"
+        ></canvas>
       </li>
-      <li>Send invitation token to peer</li>
-      <li>Ask peer for response token</li>
+      <li>Peer scans QR code</li>
+      <li>Scan peer's QR code</li>
       <li>
         <v-text-field
           label="paste response token here"
@@ -37,6 +44,7 @@
 
 <script>
 import { initHost, hostAccept, sendMessage } from "@/utils/webRtcConnection";
+import QRCode from "qrcode";
 
 const steps = Object.freeze({
   INITIAL: "INITIAL",
@@ -58,7 +66,15 @@ export default {
       message: "",
       step: steps.INITIAL,
       steps,
+      offerToken: "",
     };
+  },
+  watch: {
+    offerToken() {
+      console.log("offer token", this.offerToken);
+      this.copy(this.offerToken);
+      this.renderQrCode(this.offerToken);
+    },
   },
   methods: {
     generateInvitation() {
@@ -67,7 +83,7 @@ export default {
         (e) => this.displayMessage(e.data),
         (state) => this.$emit("connection", state),
         (e) => console.log("onIceConnectionStateChange", e),
-        (offerToken) => this.copy(offerToken)
+        (offerToken) => (this.offerToken = offerToken)
       ).then((output) => {
         this.connection = output.connection;
         this.channel = output.channel;
@@ -93,6 +109,11 @@ export default {
     displayMessage(text) {
       this.snackbarMessage = text;
       this.snackbar = true;
+    },
+    renderQrCode(dataString) {
+      QRCode.toCanvas(this.$refs.canvas, dataString).catch((err) => {
+        console.error(err);
+      });
     },
   },
 };
