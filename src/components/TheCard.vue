@@ -13,24 +13,15 @@
       </div>
       <div class="snow" v-if="settings.snow"></div>
     </div>
-    <span class="settings">
-      <CardSettings
-        :settings="settings"
-        :modifiers="modifiers"
-        @change="(newSettings) => $emit('change', newSettings)"
-      />
-    </span>
   </span>
 </template>
 
 <script>
 import CardCell from "@/components/CardCell.vue";
-import CardSettings from "@/components/CardSettings.vue";
 
 export default {
   components: {
     CardCell,
-    CardSettings,
   },
   emits: ["change"],
   props: {
@@ -117,11 +108,5 @@ export default {
   background-color: white;
   margin-top: 1rem;
   border: 1px solid #7a9852;
-}
-
-.settings {
-  position: fixed;
-  top: 1rem;
-  right: 1rem;
 }
 </style>

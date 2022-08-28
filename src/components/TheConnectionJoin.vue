@@ -55,6 +55,8 @@
 import { initJoin, sendMessage } from "@/utils/webRtcConnection";
 import QRCode from "qrcode";
 import QrScanner from "qr-scanner";
+import { connectionStore } from "@/stores/connection";
+import { mapActions } from "pinia";
 
 const steps = Object.freeze({
   INITIAL: "INITIAL",
@@ -96,13 +98,14 @@ export default {
     );
   },
   methods: {
+    ...mapActions(connectionStore, ["addConnection"]),
     async acceptInvitation() {
       initJoin(
         this.remoteOffer,
         (event) => (this.channel = event.channel),
         (e) => this.onConnectionOpen(),
         (e) => this.displayMessage(e.data),
-        (state) => this.$emit("connection", state),
+        (event) => console.log("onConnectionStateChange", event),
         (event) => console.log("onIceConnectionStateChange", event),
         (answerToken) => (this.answerToken = answerToken)
       ).then((connectionOut) => {
@@ -113,7 +116,6 @@ export default {
       });
     },
     async generateResponse() {
-      console.log("answer token", this.answerToken);
       this.renderQrCode(this.answerToken);
       this.step = steps.QR;
     },
@@ -123,6 +125,11 @@ export default {
     },
     onConnectionOpen() {
       this.step = steps.CONNECTED;
+      this.addConnection({
+        connection: this.connection,
+        channel: this.channel,
+        host: false,
+      });
     },
     displayMessage(text) {
       this.snackbarMessage = text;

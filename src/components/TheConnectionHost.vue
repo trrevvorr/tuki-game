@@ -54,6 +54,8 @@
 import { initHost, hostAccept, sendMessage } from "@/utils/webRtcConnection";
 import QRCode from "qrcode";
 import QrScanner from "qr-scanner";
+import { connectionStore } from "@/stores/connection";
+import { mapActions } from "pinia";
 
 const steps = Object.freeze({
   INITIAL: "INITIAL",
@@ -96,17 +98,17 @@ export default {
   },
   watch: {
     offerToken() {
-      console.log("offer token", this.offerToken);
       this.renderQrCode(this.offerToken);
     },
   },
   methods: {
+    ...mapActions(connectionStore, ["addConnection"]),
     generateInvitation() {
       return initHost(
         (e) => this.onConnectionOpen(),
         (e) => this.displayMessage(e.data),
         (state) => {
-          this.$emit("connection", state);
+          console.log("onConnectionStateChange", state);
           if (state === "connecting") {
             this.step = steps.PEER_ACCEPTED;
           }
@@ -132,6 +134,11 @@ export default {
     },
     onConnectionOpen() {
       this.step = steps.CONNECTED;
+      this.addConnection({
+        connection: this.connection,
+        channel: this.channel,
+        host: true,
+      });
     },
     displayMessage(text) {
       this.snackbarMessage = text;

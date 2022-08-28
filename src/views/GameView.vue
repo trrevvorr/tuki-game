@@ -10,14 +10,14 @@
     </div>
 
     <div class="controls">
-      <v-btn @click="prevCard" :disabled="cardIndex === 0">
+      <v-btn @click="() => prevCard(true)" :disabled="cardIndex === 0">
         <v-icon left> mdi-arrow-left </v-icon>
         Previous
       </v-btn>
 
       <span class="spacer"></span>
 
-      <v-btn @click="nextCard" :disabled="cardIndex === cards.length - 1">
+      <v-btn @click="() => nextCard(true)" :disabled="cardIndex === cards.length - 1">
         Next
         <v-icon right> mdi-arrow-right </v-icon>
       </v-btn>
@@ -32,6 +32,13 @@
 import TheCard from "@/components/TheCard.vue";
 import cards from "@/constants/cards.json";
 import modifiers from "@/constants/modifiers.json";
+import { connectionStore } from "@/stores/connection";
+import { mapActions } from "pinia";
+
+const MessageEvents = Object.freeze({
+  NEXT: "NEXT",
+  PREV: "PREV",
+});
 
 export default {
   components: {
@@ -50,12 +57,23 @@ export default {
     this.shuffleCards();
     this.randomizeModifiers();
   },
+  mounted() {
+    this.setMessageHandler((message) => {
+      console.info("message", message);
+      if (message === MessageEvents.NEXT) {
+        this.nextCard(false);
+      } else if (message === MessageEvents.PREV) {
+        this.prevCard(false);
+      }
+    });
+  },
   computed: {
     card() {
       return this.cards[this.cardIndex];
     },
   },
   methods: {
+    ...mapActions(connectionStore, ["setMessageHandler", "sendMessage"]),
     randomizeModifiers() {
       this.cardSettings[this.cardIndex].snow = this.card.modifiers.includes(modifiers.SNOW)
         ? !!Math.round(Math.random())
@@ -67,7 +85,11 @@ export default {
       this.cardSettings[this.cardIndex].rotate =
         Math.floor(Math.random() * (rotateRange[1] - rotateRange[0] + 1)) + rotateRange[0];
     },
-    nextCard() {
+    nextCard(forwardToPeers) {
+      if (this.cardIndex + 1 >= this.cards.length) {
+        return;
+      }
+
       if (this.cardIndex + 1 === this.cardSettings.length) {
         this.cardSettings.push([{ snow: false, rotate: 0 }]);
         this.cardIndex++;
@@ -75,9 +97,19 @@ export default {
       } else {
         this.cardIndex++;
       }
+      if (forwardToPeers) {
+        this.sendMessage(MessageEvents.NEXT);
+      }
     },
-    prevCard() {
+    prevCard(forwardToPeers) {
+      if (this.cardIndex - 1 < 0) {
+        return;
+      }
+
       this.cardIndex--;
+      if (forwardToPeers) {
+        this.sendMessage(MessageEvents.PREV);
+      }
     },
     shuffleCards() {
       for (let i = this.cards.length - 1; i > 0; i--) {

@@ -1,35 +1,28 @@
 <template>
   <div class="connection">
-    <div class="options" v-if="mode === 'NONE'">
+    <div class="options" v-if="!isHost && !isJoin">
       <h2>Connect</h2>
       <p>Connect devices to play together!</p>
-      <v-btn @click="mode = 'HOST'"> Host New Connection</v-btn>
-      <v-btn @click="mode = 'JOIN'"> Join A Connection</v-btn>
+      <v-btn @click="setMode('HOST')"> Host New Connection</v-btn>
+      <v-btn @click="setMode('JOIN')"> Join A Connection</v-btn>
     </div>
 
     <div class="view">
-      <TheConnectionHost v-if="mode === 'HOST'" @connection="(val) => (connectionState = val)" />
-      <TheConnectionJoin v-if="mode === 'JOIN'" @connection="(val) => (connectionState = val)" />
+      <TheConnectionHost v-if="isHost" />
+      <TheConnectionJoin v-if="isJoin" />
     </div>
 
     <v-btn icon class="nav-button" size="small" @click="$router.push('/')"
       ><v-icon> mdi-gamepad </v-icon></v-btn
     >
-    <div class="connection-status">
-      <v-icon v-if="connectionState == 'connected'" large color="green darken-3">
-        mdi-lan-connect
-      </v-icon>
-      <v-icon v-else-if="connectionState === 'connecting'" large color="amber">
-        mdi-lan-pending
-      </v-icon>
-      <v-icon v-else large color="red darken-4"> mdi-lan-disconnect </v-icon>
-    </div>
   </div>
 </template>
 
 <script>
 import TheConnectionHost from "@/components/TheConnectionHost.vue";
 import TheConnectionJoin from "@/components/TheConnectionJoin.vue";
+import { connectionStore } from "@/stores/connection";
+import { mapActions, mapGetters } from "pinia";
 
 export default {
   components: {
@@ -38,9 +31,13 @@ export default {
   },
   data() {
     return {
-      connectionState: "disconnected",
-      mode: "NONE",
     };
+  },
+  computed: {
+    ...mapGetters(connectionStore, ["isHost", "isJoin"]),
+  },
+  methods: {
+    ...mapActions(connectionStore, ["setMode"]),
   },
 };
 </script>
@@ -66,12 +63,6 @@ export default {
 
 .view {
   padding: 2rem;
-}
-
-.connection-status {
-  position: absolute;
-  top: 0.5rem;
-  right: 0.5rem;
 }
 
 .nav-button {
