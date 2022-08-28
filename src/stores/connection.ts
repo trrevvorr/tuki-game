@@ -6,29 +6,37 @@ export interface PeerConnection {
   host: boolean;
 }
 
+export enum ConnectionMode {
+  NONE = "NONE",
+  HOST = "HOST",
+  JOIN = "JOIN",
+}
+
 export const connectionStore = defineStore({
   id: "connection",
   state: () => ({
     connections: [] as PeerConnection[],
-    mode: "NONE",
+    mode: ConnectionMode.NONE,
+    lastMessage: null as string | null,
   }),
   getters: {
     connectedConnections: (state) =>
       state.connections.filter((conn) => conn.connection.connectionState === "connected"),
-    isHost: (state) => state.mode === "HOST",
-    isJoin: (state) => state.mode === "JOIN",
+    isHost: (state) => state.mode === ConnectionMode.HOST,
+    isJoin: (state) => state.mode === ConnectionMode.JOIN,
   },
   actions: {
     addConnection(connection: PeerConnection) {
+      connection.channel.onmessage = (e) => {
+        this.lastMessage = e.data;
+        console.info("received message: " + e.data);
+      };
       this.connections.push(connection);
-    },
-    setMessageHandler(callback: (event: string) => void) {
-      this.connections.forEach((conn) => (conn.channel.onmessage = (e) => callback(e.data)));
     },
     sendMessage(message: string) {
       this.connections.forEach((conn) => conn.channel.send(message));
     },
-    setMode(mode: "HOST" | "JOIN") {
+    setMode(mode: ConnectionMode.HOST | ConnectionMode.JOIN) {
       this.mode = mode;
     },
   },

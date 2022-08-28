@@ -2,8 +2,7 @@
   <div class="connection">
     <h2>Join Connection</h2>
 
-    <div class="scan step" v-show="step == steps.INITIAL || step == steps.SCAN">
-      <v-btn @click="scan" v-if="step == steps.INITIAL"> Scan Host's QR Code </v-btn>
+    <div class="scan step" v-show="step == steps.SCAN">
       <div class="step" v-show="step === steps.SCAN">
         <video ref="scanner" :style="{ maxWidth: '100%' }"></video>
         <v-text-field
@@ -59,7 +58,6 @@ import { connectionStore } from "@/stores/connection";
 import { mapActions } from "pinia";
 
 const steps = Object.freeze({
-  INITIAL: "INITIAL",
   SCAN: "SCAN",
   ACCEPTED: "ACCEPTED",
   QR: "QR",
@@ -79,7 +77,7 @@ export default {
       answer: "",
       message: "",
       answerToken: "",
-      step: steps.INITIAL,
+      step: steps.SCAN,
       steps,
       qrScanner: null,
     };
@@ -96,6 +94,7 @@ export default {
       },
       { highlightScanRegion: true, highlightCodeOutline: true, returnDetailedScanResult: true }
     );
+    this.qrScanner.start();
   },
   methods: {
     ...mapActions(connectionStore, ["addConnection"]),
@@ -139,10 +138,6 @@ export default {
       QRCode.toCanvas(this.$refs.canvas, dataString, { errorCorrectionLevel: "L" }).catch((err) => {
         console.error(err);
       });
-    },
-    scan() {
-      this.step = steps.SCAN;
-      this.qrScanner.start();
     },
   },
 };

@@ -1,22 +1,18 @@
 <template>
   <div class="game">
     <div class="card">
-      <TheCard
-        :pieces="card.pieces"
-        :settings="card.settings"
-        :modifiers="card.modifiers"
-      />
+      <TheCard :pieces="card.pieces" :settings="card.settings" :modifiers="card.modifiers" />
     </div>
 
     <div class="controls">
-      <v-btn @click="() => handlePrevCard(true)" :disabled="isFirstCard">
+      <v-btn @click="handlePrevCard" :disabled="isFirstCard">
         <v-icon left> mdi-arrow-left </v-icon>
         Previous
       </v-btn>
 
       <span class="spacer"></span>
 
-      <v-btn @click="() => handleNextCard(true)" :disabled="isLastCard">
+      <v-btn @click="handleNextCard" :disabled="isLastCard">
         Next
         <v-icon right> mdi-arrow-right </v-icon>
       </v-btn>
@@ -31,7 +27,6 @@
 import TheCard from "@/components/TheCard.vue";
 import { connectionStore } from "@/stores/connection";
 import { cardStore } from "@/stores/card";
-import { Modifier } from "@/types/modifier";
 import { mapActions, mapGetters } from "pinia";
 
 const MessageEvents = Object.freeze({
@@ -45,44 +40,25 @@ export default {
   },
   props: {},
   data() {
-    return {
-      cardIndex: 0,
-      Modifier,
-      cardSettings: [{ snow: false, rotate: 0 }],
-    };
+    return {};
   },
   mounted() {
-    this.setMessageHandler((message) => {
-      console.info("message", message);
-      if (message === MessageEvents.NEXT) {
-        this.handleNextCard(false);
-      } else if (message === MessageEvents.PREV) {
-        this.handlePrevCard(false);
-      }
-    });
+    this.syncHostToPeers();
   },
   computed: {
+    ...mapGetters(connectionStore, ["isHost"]),
     ...mapGetters(cardStore, ["card", "isLastCard", "isFirstCard"]),
   },
   methods: {
-    ...mapActions(connectionStore, ["setMessageHandler", "sendMessage"]),
-    ...mapActions(cardStore, ["nextCard", "prevCard"]),
-    handleNextCard(forwardToPeers) {
+    ...mapActions(cardStore, ["nextCard", "prevCard", "syncHostToPeers"]),
+    handleNextCard() {
       if (!this.isLastCard) {
         this.nextCard();
-
-        if (forwardToPeers) {
-          this.sendMessage(MessageEvents.NEXT);
-        }
       }
     },
-    handlePrevCard(forwardToPeers) {
+    handlePrevCard() {
       if (!this.isFirstCard) {
         this.prevCard();
-
-        if (forwardToPeers) {
-          this.sendMessage(MessageEvents.PREV);
-        }
       }
     },
   },

@@ -1,10 +1,6 @@
 <template>
   <div class="connection">
     <h2>Host Connection</h2>
-
-    <div class="start step" v-if="step === steps.INITIAL">
-      <v-btn @click="generateInvitation"> Generate Invitation Token </v-btn>
-    </div>
     <div class="qrcode step" v-show="offerToken && [steps.INITIAL, steps.INVITED].includes(step)">
       <canvas ref="canvas"></canvas>
       <v-text-field
@@ -84,6 +80,7 @@ export default {
     };
   },
   mounted() {
+    this.generateInvitation();
     this.qrScanner = new QrScanner(
       this.$refs.scanner,
       (result) => {
