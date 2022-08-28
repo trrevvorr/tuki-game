@@ -30,15 +30,6 @@
         Scan peer's QR code
       </div>
     </div>
-    <div class="finished step" v-if="step === steps.CONNECTED">
-      You're connected!
-      <v-btn @click="$router.push('/')"> Play Game </v-btn>
-      <!-- TODO: add another connection button -->
-      <!-- <v-btn @click="$forceUpdate()"> Add Another Connection </v-btn> -->
-    </div>
-    <v-snackbar v-model="snackbar">
-      {{ snackbarMessage }}
-    </v-snackbar>
   </div>
 </template>
 
@@ -55,12 +46,11 @@ const steps = Object.freeze({
   PEER_ACCEPTED: "PEER_ACCEPTED",
   SCAN: "SCAN",
   ACCEPTED: "ACCEPTED",
-  CONNECTED: "CONNECTED",
 });
 
 export default {
   props: {},
-  emits: ["connection"],
+  emits: ["complete"],
   data() {
     return {
       snackbar: false,
@@ -125,12 +115,12 @@ export default {
       });
     },
     onConnectionOpen() {
-      this.step = steps.CONNECTED;
       this.addConnection({
         connection: this.connection,
         channel: this.channel,
         host: true,
       });
+      this.$emit("complete");
     },
     renderQrCode(dataString) {
       QRCode.toCanvas(this.$refs.canvas, dataString, { errorCorrectionLevel: "L" }).catch((err) => {
@@ -174,9 +164,5 @@ li {
 .qrcode canvas {
   max-width: calc(100vw - 6rem);
   max-height: calc(100vw - 6rem);
-}
-
-.finished {
-  row-gap: 1rem;
 }
 </style>

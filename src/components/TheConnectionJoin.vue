@@ -33,10 +33,6 @@
         <div>Ask host to scan QR code.</div>
       </div>
     </div>
-    <div class="finished step" v-if="step === steps.CONNECTED">
-      You're connected!
-      <v-btn @click="$router.push('/')"> Play Game </v-btn>
-    </div>
   </div>
 </template>
 
@@ -52,12 +48,11 @@ const steps = Object.freeze({
   SCAN: "SCAN",
   ACCEPTED: "ACCEPTED",
   QR: "QR",
-  CONNECTED: "CONNECTED",
 });
 
 export default {
   props: {},
-  emits: ["connection"],
+  emits: ["complete"],
   data() {
     return {
       connection: null,
@@ -123,12 +118,12 @@ export default {
       this.step = steps.QR;
     },
     onConnectionOpen() {
-      this.step = steps.CONNECTED;
       this.addConnection({
         connection: this.connection,
         channel: this.channel,
         host: false,
       });
+      this.$emit("complete");
     },
     renderQrCode(dataString) {
       QRCode.toCanvas(this.$refs.canvas, dataString, { errorCorrectionLevel: "L" }).catch((err) => {
@@ -168,9 +163,5 @@ li {
 .qrcode canvas {
   max-width: calc(100vw - 6rem);
   max-height: calc(100vw - 6rem);
-}
-
-.finished {
-  row-gap: 1rem;
 }
 </style>

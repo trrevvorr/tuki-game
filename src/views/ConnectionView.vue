@@ -7,9 +7,15 @@
       <v-btn @click="setMode('JOIN')"> Join A Connection</v-btn>
     </div>
 
-    <div class="view">
-      <TheConnectionHost v-if="isHost" />
-      <TheConnectionJoin v-if="isJoin" />
+    <div class="view" v-if="!complete">
+      <TheConnectionHost v-if="isHost" @complete="complete = true" />
+      <TheConnectionJoin v-if="isJoin" @complete="complete = true" />
+    </div>
+
+    <div v-else class="finished-step">
+      <h2>You're Connected!</h2>
+      <v-btn @click="$router.push('/')"> Play Game </v-btn>
+      <v-btn v-if="isHost" @click="complete = false"> Add Another Connection </v-btn>
     </div>
 
     <v-btn icon class="nav-button" size="small" @click="$router.push('/')"
@@ -31,6 +37,7 @@ export default {
   },
   data() {
     return {
+      complete: false,
     };
   },
   computed: {
@@ -69,5 +76,13 @@ export default {
   position: fixed;
   top: 1rem;
   left: 1rem;
+}
+
+.finished-step {
+  padding-top: 1rem;
+  padding-bottom: 1rem;
+  justify-items: center;
+  display: grid;
+  row-gap: 1rem;
 }
 </style>
