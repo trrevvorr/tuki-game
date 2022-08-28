@@ -3,6 +3,8 @@
     <h2>Join Connection</h2>
 
     <div class="scan step" v-show="step == steps.SCAN">
+      <h3>Accept Invitation</h3>
+      <div>Ask your host to generate an invitation QR code for your to scan.</div>
       <div class="step" v-show="step === steps.SCAN">
         <video ref="scanner" :style="{ maxWidth: '100%' }"></video>
         <v-text-field
@@ -17,8 +19,10 @@
       </div>
     </div>
     <div class="qrcode step" v-show="[steps.ACCEPTED, steps.QR].includes(step)">
+      <h3>Respond To Host</h3>
+      <div>Ask your host to accept your connection by having them scan the QR code below.</div>
       <v-btn @click="generateResponse" v-if="step === steps.ACCEPTED">
-        Generate Response Token
+        Generate Response QR Code
       </v-btn>
       <div class="step" v-show="step === steps.QR">
         <canvas ref="canvas"></canvas>
@@ -30,7 +34,6 @@
           class="input-field"
           variant="outlined"
         ></v-text-field>
-        <div>Ask host to scan QR code.</div>
       </div>
     </div>
   </div>

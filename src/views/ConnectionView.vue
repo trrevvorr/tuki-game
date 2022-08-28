@@ -14,8 +14,8 @@
 
     <div v-else class="finished-step">
       <h2>You're Connected!</h2>
-      <v-btn @click="$router.push('/')"> {{isHost ? 'Start Game' : 'Join Game' </v-btn>
       <v-btn v-if="isHost" @click="complete = false"> Add Another Connection </v-btn>
+      <v-btn @click="$router.push('/')"> {{ isHost ? "Start Game" : "Join Game" }} </v-btn>
     </div>
 
     <v-btn icon class="nav-button" size="small" @click="$router.push('/')"

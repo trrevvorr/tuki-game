@@ -2,6 +2,8 @@
   <div class="connection">
     <h2>Host Connection</h2>
     <div class="qrcode step" v-show="offerToken && [steps.INITIAL, steps.INVITED].includes(step)">
+      <h3>Invite User</h3>
+      <div>Ask user to join your connection by having them scan the QR code below.</div>
       <canvas ref="canvas"></canvas>
       <v-text-field
         hide-details="auto"
@@ -11,9 +13,10 @@
         class="input-field"
         variant="outlined"
       ></v-text-field>
-      <div>Ask peer to scan QR code or copy token above</div>
     </div>
     <div class="qrcode-scanner step" v-show="[steps.SCAN, steps.PEER_ACCEPTED].includes(step)">
+      <h3>Accept User Response</h3>
+      <div>Ask user to to generate a reponse QR code for you to scan.</div>
       <v-btn v-if="step === steps.PEER_ACCEPTED" @click="scan"> Scan QR Code </v-btn>
       <div class="step" v-show="step === steps.SCAN">
         <video ref="scanner" :style="{ maxWidth: '100%' }"></video>
@@ -27,7 +30,6 @@
           variant="outlined"
           density="compact"
         ></v-text-field>
-        Scan peer's QR code
       </div>
     </div>
   </div>
