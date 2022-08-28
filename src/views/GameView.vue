@@ -1,21 +1,29 @@
 <template>
   <div class="game">
-    <div class="card">
-      <TheCard :pieces="card.pieces" :settings="card.settings" :modifiers="card.modifiers" />
+    <div v-if="card">
+      <div class="card">
+        <TheCard :pieces="card.pieces" :settings="card.settings" :modifiers="card.modifiers" />
+      </div>
+
+      <div class="controls">
+        <v-btn @click="handlePrevCard" v-if="!isFirstCard">
+          <v-icon left> mdi-arrow-left </v-icon>
+          Previous
+        </v-btn>
+
+        <span class="spacer"></span>
+
+        <v-btn @click="handleNextCard" v-if="!isLastCard">
+          Next
+          <v-icon right> mdi-arrow-right </v-icon>
+        </v-btn>
+      </div>
     </div>
-
-    <div class="controls">
-      <v-btn @click="handlePrevCard" :disabled="isFirstCard">
-        <v-icon left> mdi-arrow-left </v-icon>
-        Previous
-      </v-btn>
-
-      <span class="spacer"></span>
-
-      <v-btn @click="handleNextCard" :disabled="isLastCard">
-        Next
-        <v-icon right> mdi-arrow-right </v-icon>
-      </v-btn>
+    <div v-else>
+      <div class="text-center">
+        <v-progress-circular indeterminate :size="100" :width="10"></v-progress-circular>
+        <div :style="{ marginTop: '1rem' }">Waiting on host to start game</div>
+      </div>
     </div>
   </div>
   <v-btn icon class="nav-button" size="small" @click="$router.push('/connect')"

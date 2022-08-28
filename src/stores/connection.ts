@@ -18,10 +18,10 @@ export const connectionStore = defineStore({
     connections: [] as PeerConnection[],
     mode: ConnectionMode.NONE,
     lastMessage: null as string | null,
+    lastConnectionChangeAt: new Date(),
   }),
   getters: {
-    connectedConnections: (state) =>
-      state.connections.filter((conn) => conn.connection.connectionState === "connected"),
+    allConnections: (state) => state.connections,
     isHost: (state) => state.mode === ConnectionMode.HOST,
     isJoin: (state) => state.mode === ConnectionMode.JOIN,
   },
@@ -31,10 +31,18 @@ export const connectionStore = defineStore({
         this.lastMessage = e.data;
         console.info("received message: " + e.data);
       };
+      connection.connection.onconnectionstatechange = (newState) => {
+        this.lastConnectionChangeAt = new Date();
+        console.info("onconnectionstatechange: " + newState);
+      };
+
       this.connections.push(connection);
+      this.lastConnectionChangeAt = new Date();
     },
     sendMessage(message: string) {
-      this.connections.forEach((conn) => conn.channel.send(message));
+      this.connections
+        .filter((conn) => conn.channel.readyState === 'open')
+        .forEach((conn) => conn.channel.send(message));
     },
     setMode(mode: ConnectionMode.HOST | ConnectionMode.JOIN) {
       this.mode = mode;

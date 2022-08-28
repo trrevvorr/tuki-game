@@ -30,15 +30,11 @@
         Scan peer's QR code
       </div>
     </div>
-    <div class="message step" v-if="step === steps.CONNECTED">
-      <v-text-field
-        label="message"
-        hide-details="auto"
-        v-model="message"
-        class="input-field"
-      ></v-text-field>
-      <br />
-      <v-btn @click="sendMessage"> Send </v-btn>
+    <div class="finished step" v-if="step === steps.CONNECTED">
+      You're connected!
+      <v-btn @click="$router.push('/')"> Play Game </v-btn>
+      <!-- TODO: add another connection button -->
+      <!-- <v-btn @click="$forceUpdate()"> Add Another Connection </v-btn> -->
     </div>
     <v-snackbar v-model="snackbar">
       {{ snackbarMessage }}
@@ -93,6 +89,9 @@ export default {
       { highlightScanRegion: true, highlightCodeOutline: true, returnDetailedScanResult: true }
     );
   },
+  unmounted() {
+    this.qrScanner.stop();
+  },
   watch: {
     offerToken() {
       this.renderQrCode(this.offerToken);
@@ -125,10 +124,6 @@ export default {
         this.qrScanner.stop();
       });
     },
-    async sendMessage() {
-      sendMessage(this.channel, this.message);
-      this.message = "";
-    },
     onConnectionOpen() {
       this.step = steps.CONNECTED;
       this.addConnection({
@@ -136,10 +131,6 @@ export default {
         channel: this.channel,
         host: true,
       });
-    },
-    displayMessage(text) {
-      this.snackbarMessage = text;
-      this.snackbar = true;
     },
     renderQrCode(dataString) {
       QRCode.toCanvas(this.$refs.canvas, dataString, { errorCorrectionLevel: "L" }).catch((err) => {
@@ -183,5 +174,9 @@ li {
 .qrcode canvas {
   max-width: calc(100vw - 6rem);
   max-height: calc(100vw - 6rem);
+}
+
+.finished {
+  row-gap: 1rem;
 }
 </style>

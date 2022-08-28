@@ -33,31 +33,22 @@
         <div>Ask host to scan QR code.</div>
       </div>
     </div>
-    <div class="message step" v-if="step === steps.CONNECTED">
-      <v-text-field
-        label="message"
-        hide-details="auto"
-        v-model="message"
-        :disabled="step !== steps.CONNECTED"
-        class="input-field"
-      ></v-text-field>
-      <br />
-      <v-btn @click="sendMessage" :disabled="step !== steps.CONNECTED"> Send </v-btn>
+    <div class="finished step" v-if="step === steps.CONNECTED">
+      You're connected!
+      <v-btn @click="$router.push('/')"> Play Game </v-btn>
     </div>
-    <v-snackbar v-model="snackbar">
-      {{ snackbarMessage }}
-    </v-snackbar>
   </div>
 </template>
 
 <script>
-import { initJoin, sendMessage } from "@/utils/webRtcConnection";
+import { initJoin } from "@/utils/webRtcConnection";
 import QRCode from "qrcode";
 import QrScanner from "qr-scanner";
 import { connectionStore } from "@/stores/connection";
-import { mapActions } from "pinia";
+import { mapActions, mapGetters } from "pinia";
 
 const steps = Object.freeze({
+  INITIAL: "INITIAL",
   SCAN: "SCAN",
   ACCEPTED: "ACCEPTED",
   QR: "QR",
@@ -69,15 +60,12 @@ export default {
   emits: ["connection"],
   data() {
     return {
-      snackbar: false,
-      snackbarMessage: "",
       connection: null,
       channel: null,
       remoteOffer: "",
       answer: "",
-      message: "",
       answerToken: "",
-      step: steps.SCAN,
+      step: steps.INITIAL,
       steps,
       qrScanner: null,
     };
@@ -94,7 +82,23 @@ export default {
       },
       { highlightScanRegion: true, highlightCodeOutline: true, returnDetailedScanResult: true }
     );
-    this.qrScanner.start();
+
+    if (this.connected) {
+      this.step = steps.CONNECTED;
+    } else {
+      this.step = steps.SCAN;
+      this.qrScanner.start();
+    }
+  },
+  unmounted() {
+    this.qrScanner.stop();
+  },
+  computed: {
+    ...mapGetters(connectionStore, ["allConnections"]),
+    connected() {
+      return this.allConnections.filter((conn) => conn.connection.connectionState === "connected")
+        .length;
+    },
   },
   methods: {
     ...mapActions(connectionStore, ["addConnection"]),
@@ -103,9 +107,9 @@ export default {
         this.remoteOffer,
         (event) => (this.channel = event.channel),
         (e) => this.onConnectionOpen(),
-        (e) => this.displayMessage(e.data),
-        (event) => console.log("onConnectionStateChange", event),
-        (event) => console.log("onIceConnectionStateChange", event),
+        (e) => console.info("onmessage", e.data),
+        (event) => console.info("onConnectionStateChange", event),
+        (event) => console.info("onIceConnectionStateChange", event),
         (answerToken) => (this.answerToken = answerToken)
       ).then((connectionOut) => {
         this.connection = connectionOut;
@@ -118,10 +122,6 @@ export default {
       this.renderQrCode(this.answerToken);
       this.step = steps.QR;
     },
-    async sendMessage() {
-      sendMessage(this.channel, this.message);
-      this.message = "";
-    },
     onConnectionOpen() {
       this.step = steps.CONNECTED;
       this.addConnection({
@@ -129,10 +129,6 @@ export default {
         channel: this.channel,
         host: false,
       });
-    },
-    displayMessage(text) {
-      this.snackbarMessage = text;
-      this.snackbar = true;
     },
     renderQrCode(dataString) {
       QRCode.toCanvas(this.$refs.canvas, dataString, { errorCorrectionLevel: "L" }).catch((err) => {
@@ -172,5 +168,9 @@ li {
 .qrcode canvas {
   max-width: calc(100vw - 6rem);
   max-height: calc(100vw - 6rem);
+}
+
+.finished {
+  row-gap: 1rem;
 }
 </style>
