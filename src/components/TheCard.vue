@@ -23,7 +23,6 @@ export default {
   components: {
     CardCell,
   },
-  emits: ["change"],
   props: {
     pieces: {
       required: true,
@@ -32,10 +31,6 @@ export default {
     settings: {
       required: true,
       type: Object,
-    },
-    modifiers: {
-      required: true,
-      type: Array,
     },
   },
   computed: {
