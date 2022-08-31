@@ -6,14 +6,17 @@
       </div>
 
       <div class="controls">
-        <v-btn @click="handlePrevCard" v-if="!isFirstCard">
+        <v-btn @click="handlePrevCard" :style="{ visibility: isFirstCard ? 'hidden' : 'initial' }">
           <v-icon left> mdi-arrow-left </v-icon>
           Previous
         </v-btn>
 
-        <span class="spacer"></span>
+        <span class="count" v-if="card.index !== undefined">
+          {{ card.index + 1 }} of {{ cardCount }}
+        </span>
+        <span v-else></span>
 
-        <v-btn @click="handleNextCard" v-if="!isLastCard">
+        <v-btn @click="handleNextCard" :style="{ visibility: isLastCard ? 'hidden' : 'initial' }">
           Next
           <v-icon right> mdi-arrow-right </v-icon>
         </v-btn>
@@ -55,7 +58,7 @@ export default {
   },
   computed: {
     ...mapGetters(connectionStore, ["isHost"]),
-    ...mapGetters(cardStore, ["card", "isLastCard", "isFirstCard"]),
+    ...mapGetters(cardStore, ["card", "isLastCard", "isFirstCard", "cardCount"]),
   },
   methods: {
     ...mapActions(cardStore, ["nextCard", "prevCard", "syncHostToPeers"]),
@@ -92,5 +95,9 @@ export default {
   position: fixed;
   top: 1rem;
   left: 1rem;
+}
+
+.count {
+  text-align: center;
 }
 </style>

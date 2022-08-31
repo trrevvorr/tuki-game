@@ -18,6 +18,9 @@ export const cardStore = defineStore({
         return state.deck.getCard(state.index);
       }
     },
+    cardCount: (state) => {
+      return state.deck.cardCount();
+    },
     isLastCard: (state) => {
       if (connectionStore().isJoin) {
         return true;

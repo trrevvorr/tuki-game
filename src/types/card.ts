@@ -5,6 +5,7 @@ import type { CardSettings } from "./cardSettings";
 export interface Card {
   pieces: Piece;
   modifiers: Modifier[];
+  index?: number;
 }
 
 export interface CardWithSettings extends Card {
